@@ -1,0 +1,13 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "database": "${workspaceFolder:DogeAPImetro}/database/dogeapi.sqlite",
+            "name": "12"
+        }
+    ],
+    "sqltools.useNodeRuntime": true,
+    "liveServer.settings.port": 5501,
+    "html.format.wrapLineLength": 0
+}
