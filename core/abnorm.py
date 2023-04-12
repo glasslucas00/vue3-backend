@@ -13,11 +13,11 @@ from schema import schemas
 
 router = APIRouter(tags=["Abnorm"], prefix="/abnorm")
 get_db = configuration.get_db
-get_db_byname = configuration.get_db_byname
+# get_db = configuration.get_db
 
 
 @router.get("/", response_model=List[schemas.Abnorm])
-def get_all_blogs(db: Session = Depends(get_db_byname)):
+def get_all_blogs(db: Session = Depends(get_db)):
     """
     Get all blogs
 
@@ -34,7 +34,7 @@ def get_all_blogs(db: Session = Depends(get_db_byname)):
 @router.post("/", status_code=status.HTTP_201_CREATED)
 def create(
     request: schemas.Abnorm,
-    db: Session = Depends(get_db_byname),
+    db: Session = Depends(get_db),
 ):
     """
     Create a blog
@@ -106,7 +106,7 @@ def delete_blog(
 # def get_meas_by_id(
 #     id_tour: int,
 #     response: Response,
-#     db: Session = Depends(get_db_byname),
+#     db: Session = Depends(get_db),
 # ):
 #     """
 #     Get a blog by id
@@ -126,7 +126,7 @@ def delete_blog(
 # @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 # def delete_blog(
 #     id: int,
-#     db: Session = Depends(get_db_byname),
+#     db: Session = Depends(get_db),
 # ):
 #     """
 #     Delete a blog by id

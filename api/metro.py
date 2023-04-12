@@ -264,7 +264,15 @@ def search(request: schemas.MeasSearchTable, db: Session):
     items = db.query(new_meas).filter(text(sqltext)).all()
     count = len(items)
     print('count', count)
-
+    ss=[]
+    s2=[]
+    for item in items:
+        ss.append(item.distance_from_last_station_m)
+        s2.append(item.stagger)
+    np.save('dist',np.array(ss))
+    np.save('stagger',np.array(s2))
+    from utils.xmatch import xmatch
+    xmatch(search_dict['id_station_next'],ss,s2)
 # ******************************************** 2.曲线拟合*****************************************************
     try:
         items = get_fit_item(request, search_dict, items)

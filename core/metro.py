@@ -13,7 +13,7 @@ from schema import schemas
 
 router = APIRouter(tags=["Meas"], prefix="/meas")
 get_db = configuration.get_db
-get_db_byname = configuration.get_db_byname
+# get_db = configuration.get_db
 
 
 
@@ -35,7 +35,7 @@ def get_all_meas(metro_name: str,db: Session = Depends(get_db)):
 @router.post("/", status_code=status.HTTP_201_CREATED)
 def create(
     request: schemas.Meas,
-    db: Session = Depends(get_db_byname),
+    db: Session = Depends(get_db),
 ):
     """
     Create a blog
@@ -69,7 +69,7 @@ def searchAll(
 # def get_meas_by_id(
 #     id_tour: int,
 #     response: Response,
-#     db: Session = Depends(get_db_byname),
+#     db: Session = Depends(get_db),
 # ):
 #     """
 #     Get a blog by id
@@ -89,7 +89,7 @@ def searchAll(
 @router.delete("/aa", status_code=status.HTTP_204_NO_CONTENT)
 def delete_blog(
     id: int,
-    db: Session = Depends(get_db_byname),
+    db: Session = Depends(get_db),
 ):
     """
     Delete a blog by id
