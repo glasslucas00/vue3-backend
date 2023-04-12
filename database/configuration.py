@@ -25,10 +25,3 @@ def get_db():
         yield db
     finally:
         db.close()
-def get_db_byname(metro_name: str = 'HZ001'):
-    db = SessionLocal()
-    
-    try:
-        yield db,metro_name
-    finally:
-        db.close()
