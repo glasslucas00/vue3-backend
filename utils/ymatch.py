@@ -29,13 +29,16 @@ class AnchorYMatch(object):
     def __init__(self, station, upanchor, items=None):
         self.dist = []
         self.stagger = []
+        self.station=station
         self.upanchor = upanchor
         self.dist_groups, self.stagger_groups = ([], [])
         stationInfo = upanchor.getStationInfo(station)
+        self.anchor_items = upanchor.getAnchorsItems(station)
         self.aname = stationInfo['name']
         self.adist = stationInfo['dist']
         self.adist_groups, self.astagger_groups = upanchor.anchorSplit(station)
         self.match_index = []
+        self.maxDist=0
         self.getData(items)
 
     def getData(self, items):
@@ -110,11 +113,16 @@ class AnchorYMatch(object):
         self.fit_items = [None]*self.adist.shape[0]
         # print(len(self.fit_items))
         # plt.figure(figsize=(12, 8))
-        self.chartData = []
-        fit_stagger_groups = []
+        # self.staggerData = []
+        # self.heightData = []
+        # self.anchorStagger = []
+        # self.anchorHeight = []
+        # self.anchorName = []
+        self.chartDatas = {'stagger':[],'height':[],'abrasion':[],'temp':[],'abrasion_other':[],'stagger_other':[],'anchorStagger':[],'anchorHeight':[],'anchorName':[]}
+        # fit_stagger_groups = []
+        self.sort_anchor_items = []
         for i in range(len(self.adist_groups)):
-            adist_group, astagger_group = (
-                self.adist_groups[i], self.astagger_groups[i])
+            adist_group, astagger_group = (self.adist_groups[i], self.astagger_groups[i])
             # dist_group, stagger_group = self.dataPadding(self.dist_groups[i], self.stagger_groups[i])
             g_index = self.match_index[i]
             dist_group, stagger_group = (
@@ -125,32 +133,49 @@ class AnchorYMatch(object):
             x = np.linspace(dist_group[0], dist_group[-1], double_num)
             y = np.interp(x, dist_group, stagger_group)
             fit_stagger_group = []
-            for (i, adist) in enumerate(adist_group):
+            for (j, adist) in enumerate(adist_group):
                 index = self.searchIndex(dist_group, adist)
                 index2 = self.searchIndex(x, adist)
 
                 # modifly
                 t_stagger = y[index2]
                 t_item = copy.deepcopy(item_group[index])
-                a_stagger = astagger_group[i]
+                a_stagger = astagger_group[j]
                 while abs(t_stagger-a_stagger) > 10:
                     t_stagger = (t_stagger+a_stagger)/2
-
                 t_item.stagger = round(t_stagger, 3)
-                t_item.distance_from_last_station_m = adist
                 anchor_index = np.where(self.adist == adist)[0][0]
-                anchor_index = anchor_index
-                # print(adist,anchor_index,np.where(self.adist==adist))
-                t_item.anchor_name = self.aname[anchor_index]
-                t_item.abrasion, t_item.abrasion_other = self.upanchor.refineAbrasion(
-                    t_item.anchor_name, t_item.abrasion)
+                adist+=self.maxDist
+                anchor_item = self.anchor_items[anchor_index]
+
+                t_item.anchor_name = anchor_item["name"]
+                t_item.distance_from_last_station_m = adist
+                t_item.abrasion, t_item.abrasion_other = self.upanchor.refineAbrasion(t_item.anchor_name, t_item.abrasion)
                 fit_stagger_group.append(t_stagger)
                 self.fit_items[anchor_index] = t_item
-                self.chartData.append(
-                    [t_item.distance_from_last_station_m, t_item.stagger])
-            self.chartData.append(
-                [t_item.distance_from_last_station_m+0.1, None])
-            fit_stagger_groups.append(fit_stagger_group)
+
+                self.chartDatas['stagger'].append([adist, t_item.stagger])
+                self.chartDatas['height'].append([adist, t_item.height])
+                self.chartDatas['abrasion'].append([adist, t_item.abrasion])
+                self.chartDatas['temp'].append([adist, t_item.temperature_max])
+                self.chartDatas['abrasion_other'].append([adist, t_item.abrasion_other])
+                # self.chartDatas['stagger_other'].append([adist, t_item.stagger_other])
+                self.chartDatas['anchorStagger'].append([adist, anchor_item["stagger"]])
+                self.chartDatas['anchorHeight'].append([adist, anchor_item["height"]])
+                self.chartDatas['anchorName'].append([adist, anchor_item["name"]])
+            if i!=(len(self.adist_groups)-1):
+                for key in self.chartDatas:
+                    if key =="anchorName" or key =='stagger_other':
+                        continue
+                    self.chartDatas[key].append([adist+0.1, None])
+                # self.chartDatas['stagger'].append([adist+0.1, None])
+                # self.chartDatas['height'].append([adist+0.1, None])
+                # self.chartDatas['stagger'].append([adist+0.1, None])
+                # self.chartDatas['height'].append([adist+0.1, None])
+                # self.chartDatas['anchorStagger'].append([adist+0.1, None])
+                # self.chartDatas['anchorHeight'].append([adist+0.1, None])
+        self.chartDatas['anchorName'].append([adist+4, '站点-'+str(self.station)])
+            # fit_stagger_groups.append(fit_stagger_group)
         # print(len(self.fit_items))
         self.fit_items = self.addPointsByFit(self.fit_items)
         # self.showPlot(self.fit_items)
@@ -196,6 +221,7 @@ class AnchorYMatch(object):
                 y = k*items[i].distance_from_last_station_m+b
                 # items[i].stagger_other = Decimal(abs(items[i].stagger-y)).quantize(Decimal("0.00"))
                 items[i].stagger_other = round(abs(items[i].stagger-y), 3)
+            self.chartDatas['stagger_other'].append([items[i].distance_from_last_station_m, items[i].stagger_other])
         return items
 
 # for i in range(5,10):

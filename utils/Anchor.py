@@ -55,7 +55,7 @@ class Anchor(object):
         stationInfo = self.StationList[station]
         dist = stationInfo['dist']
         stagger = stationInfo['stagger']
-
+        # self.anchors_items= self.getAnchorsCharts(station)
         anchors_dis = np.append(dist, dist[-1])
         anchors_stagger = np.append(stagger, anchors_dis[-1])
         new_anchors_stagger = []
@@ -115,16 +115,18 @@ class Anchor(object):
         val = round(val, 3)
         return 14 - val, val
 
-    def getAnchorsCharts(self, station):
+    def getAnchorsItems(self, station):
         d_dict = []
         stationInfo = self.StationList[station]
         anchors_name = stationInfo['name']
         anchors_dis = stationInfo['dist']
         anchors_stagger = stationInfo['stagger']
         anchors_height = stationInfo['height']
+        
         for i in range(anchors_name.shape[0]):
             d_dict.append({'name': anchors_name[i], 'distance_from_last_station_m': anchors_dis[i], 'height': float(
                 anchors_height[i]), 'stagger': float(anchors_stagger[i]), 'id_station_next': station})
+
         return d_dict
 
     def getAnchorName(self, station, dist):

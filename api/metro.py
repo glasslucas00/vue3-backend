@@ -354,7 +354,7 @@ def searchChart(request: schemas.MeasSearchTable, db: Session):
     for item in Querys:
         itemsDict[item.id_station_next].append(item)
     itemsList = []
-    chartDatas = []
+    chartDatas = {'stagger':[],'height':[],'abrasion':[],'temp':[],'abrasion_other':[],'stagger_other':[],'anchorStagger':[],'anchorHeight':[],'anchorName':[]}
     anchorsCharts = []
     for station in station_sort:
         try:
@@ -369,22 +369,32 @@ def searchChart(request: schemas.MeasSearchTable, db: Session):
 
             ymatch = AnchorYMatch(station, upanchor, items)
             ymatch.groupsMatch()
+            ymatch.maxDist=maxDist
             items = ymatch.groupFit()
-            chartData = ymatch.chartData
-            TrueAnchorsChart = upanchor.getAnchorsCharts(station)
+            # TrueAnchorsChart = upanchor.getAnchorsItems(station)
             # print('len(items)',len(items))
-            for item in items:
-                item.distance_from_last_station_m += maxDist
-                itemsList.append(item)
-            for item in chartData:
-                item[0] += maxDist
-                chartDatas.append(item)
-            for item in TrueAnchorsChart:
-                item['distance_from_last_station_m'] += maxDist
-                anchorsCharts.append(item)
+            # for item in items:
+            #     item.distance_from_last_station_m += maxDist
+            #     itemsList.append(item)
+            for key in ymatch.chartDatas:
+                for item in ymatch.chartDatas[key]:
+                    chartDatas[key].append(item)
+            # for item in ymatch.staggerData:
+            #     chartDatas['staggerData'].append(item)
+            # for item in  ymatch.heightData:
+            #     chartDatas['heightData'].append(item)
+            # for item in ymatch.anchorStagger:
+            #     chartDatas['anchorStagger'].append(item)
+            # for item in  ymatch.anchorHeight:
+            #     chartDatas['anchorHeight'].append(item)
+            # for item in  ymatch.anchorName:
+            #     chartDatas['anchorName'].append(item)
+            # for item in TrueAnchorsChart:
+            #     item['distance_from_last_station_m'] += maxDist
+            #     anchorsCharts.append(item)
         except Exception as e:
             print('Error', str(e))
     count = len(itemsList)
     print('count', count)
     # anchor表的数据
-    return {"code": 200, "message": "success", 'data': {'total': chartDatas, 'items': itemsList, 'tour_list': list_distance_span_station, 'trueData': anchorsCharts}}
+    return {"code": 200, "message": "success", 'data': {'chartDatas': chartDatas, 'items': itemsList, 'tour_list': list_distance_span_station, 'trueData': anchorsCharts}}
