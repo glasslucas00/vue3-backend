@@ -371,27 +371,9 @@ def searchChart(request: schemas.MeasSearchTable, db: Session):
             ymatch.groupsMatch()
             ymatch.maxDist=maxDist
             items = ymatch.groupFit()
-            # TrueAnchorsChart = upanchor.getAnchorsItems(station)
-            # print('len(items)',len(items))
-            # for item in items:
-            #     item.distance_from_last_station_m += maxDist
-            #     itemsList.append(item)
             for key in ymatch.chartDatas:
                 for item in ymatch.chartDatas[key]:
                     chartDatas[key].append(item)
-            # for item in ymatch.staggerData:
-            #     chartDatas['staggerData'].append(item)
-            # for item in  ymatch.heightData:
-            #     chartDatas['heightData'].append(item)
-            # for item in ymatch.anchorStagger:
-            #     chartDatas['anchorStagger'].append(item)
-            # for item in  ymatch.anchorHeight:
-            #     chartDatas['anchorHeight'].append(item)
-            # for item in  ymatch.anchorName:
-            #     chartDatas['anchorName'].append(item)
-            # for item in TrueAnchorsChart:
-            #     item['distance_from_last_station_m'] += maxDist
-            #     anchorsCharts.append(item)
         except Exception as e:
             print('Error', str(e))
     count = len(itemsList)
