@@ -1,18 +1,12 @@
 #!/usr/bin/python3
-
-# from typing import List
-
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-
 from api import train
 from database import configuration
-# from schema import schemas
-# from schema.oa2 import get_current_user
-
 
 router = APIRouter(tags=["Metro"], prefix="/metro")
 get_db = configuration.get_db
+
 
 @router.get("/")
 def get_all_Metros(db: Session = Depends(get_db)):
@@ -26,6 +20,5 @@ def get_all_Metros(db: Session = Depends(get_db)):
     Returns:
         List[schemas.ShowBlog]: List of blogs
     """
-
 
     return train.get_all_Metros(db)
