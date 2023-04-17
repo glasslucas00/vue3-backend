@@ -1,10 +1,10 @@
 import numpy as np
-from scipy.signal import find_peaks, argrelmin
-from utils.Anchor import Anchor
+# from scipy.signal import find_peaks, argrelmin
+# from utils.Anchor import Anchor
 # from Anchor import Anchor
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import copy
-from decimal import Decimal
+# from decimal import Decimal
 """ 
 1.数据分割  dataSplit
     items -> dist_groups, stagger_groups
@@ -198,9 +198,9 @@ class AnchorYMatch(object):
             stagger_other.append(item.stagger_other)
             dist.append(item.distance_from_last_station_m)
 
-        plt.plot(dist, stagger)
-        plt.plot(dist, stagger_other)
-        plt.show()
+        # plt.plot(dist, stagger)
+        # plt.plot(dist, stagger_other)
+        # plt.show()
 
     def addPointsByFit(self, items):
         # plt.figure()
