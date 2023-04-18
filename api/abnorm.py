@@ -139,16 +139,14 @@ def searchByAnchor(request: schemas.AbnormSearchTable, db: Session):
     sqltext2 = ''
     sqltext = ''
     search_dict = {}
-
     for k, v in request:
         if k == 'pageSize' or k == 'pageIndex':
             continue
         if v and v != 0:
             search_dict[k] = v
-        print(k, v)
+        # print(k, v)
     metro_name = 'abnorm_'+search_dict.pop('metro_name')
-    sqltext2 = ''
-    print('=========================\n', search_dict)
+    # print('=========================\n', search_dict)
 
     import time
     timeArray0 = time.strptime(search_dict['timestamp'][0], "%Y-%m-%d")
@@ -185,7 +183,7 @@ def searchByAnchor(request: schemas.AbnormSearchTable, db: Session):
             else:
                 sqltext = sqltext+metro_name+'.'+k+'='+str(v[0])+' and '
         elif k == 'type':
-            print(v)
+            # print(v)
             if len(v) == 1:
                 sqltext = sqltext+metro_name+'.'+k+'='+str(v[0])+' and '
             elif len(v) > 1 and len(v) < 5:
@@ -197,7 +195,7 @@ def searchByAnchor(request: schemas.AbnormSearchTable, db: Session):
             else:
                 pass
         elif k == 'level':
-            print(v)
+            # print(v)
             if len(v) == 1:
                 sqltext = sqltext+metro_name+'.'+k+'='+str(v[0])+' and '
             elif len(v) == 2:
@@ -213,55 +211,72 @@ def searchByAnchor(request: schemas.AbnormSearchTable, db: Session):
     new_meas = type("new_meas", (models.baseAbnorm, models.Base), {
                     "__tablename__": metro_name})
     items = db.query(new_meas).filter(text(sqltext)).having(
-        text(sqltext2)).order_by(new_meas.id_station_next).all()
+        text(sqltext2)).order_by(new_meas.distance_from_last_station_m).all()
+    if not items:
+        return {"code": 404, "message": "404 Not found", 'data': {'total': 0, 'items': []}}
+
     count = len(items)
     data_Dict = {}
-
-    for item in items:
-        if item.direction == 1:
-            item.anchor_name, item.anchor_distance_m = ulanchor.getAnchorName(
-                item.id_station_next, item.distance_from_last_station_m)
-        else:
-            item.anchor_name, item.anchor_distance_m = dlanchor.getAnchorName(
-                item.id_station_next, item.distance_from_last_station_m)
-        if item.anchor_name not in data_Dict.keys():
-            data_Dict[item.anchor_name] = {
-                1: 0, 2: 0, 3: 0, 10: 0, 11: 0, 20: 0, 21: 0, 41: 0}
-        if item.type in [1, 2, 3, 10, 11, 20, 21, 41]:
-            data_Dict[item.anchor_name][item.type] += 1
-
-    count_data = []
-    type_colletion = []
-    anchor_now_name = ''
-    if count:
-        if items[0].anchor_name:
-            anchor_now_name = items[0].anchor_name
+    station_sort=list(range(search_dict['id_station_pre'],search_dict['id_station_next']))
+    for i in station_sort:
         for item in items:
-            if item.anchor_name:
-                if item.anchor_name == anchor_now_name:
-                    type_colletion.append(item.type)
+            if item.id_station_next==i:
+                if item.direction == 1:
+                    item.anchor_name, item.anchor_distance_m = ulanchor.getAnchorName(
+                        item.id_station_next, item.distance_from_last_station_m)
                 else:
-                    if anchor_now_name:
-                        count_data.append(
-                            {'name': anchor_now_name, 'data': dict(Counter(type_colletion))})
-                    anchor_now_name = item.anchor_name
-                    type_colletion = [item.type]
-        if anchor_now_name:
-            count_data.append(
-                {'name': anchor_now_name, 'data': dict(Counter(type_colletion))})
+                    item.anchor_name, item.anchor_distance_m = dlanchor.getAnchorName(
+                        item.id_station_next, item.distance_from_last_station_m)
+                if item.anchor_name not in data_Dict.keys():
+                    data_Dict[item.anchor_name] = {1: 0, 2: 0, 3: 0, 10: 0, 11: 0, 20: 0, 21: 0, 41: 0}
+                if item.type in [1, 2, 3, 10, 11, 20, 21, 41]:
+                    data_Dict[item.anchor_name][item.type] += 1
+    # print("data_Dict:",data_Dict)
+    tableData=[]
+    AnchorDict={'anchorname':[],'abnorm':{1:[],2:[],3:[],10:[],11:[],20:[],21:[],41:[]}}
+    for key in data_Dict.keys():
+        AnchorDict['anchorname'].append(key)
+        AnchorDict['abnorm'][1].append(data_Dict[key][1])
+        AnchorDict['abnorm'][2].append(data_Dict[key][2])
+        AnchorDict['abnorm'][3].append(data_Dict[key][3])
+        AnchorDict['abnorm'][10].append(data_Dict[key][10])
+        AnchorDict['abnorm'][11].append(data_Dict[key][11])
+        tableData.append({'anchor杆号':key, '导高异常':data_Dict[key][1],"拉出值异常":data_Dict[key][2],"磨耗异常":data_Dict[key][3],"燃弧异常":data_Dict[key][10],"温度异常":data_Dict[key][11]})
+        # tableData.append({"anchor":key, 'a1':data_Dict[key][1],"a2":data_Dict[key][2],"a3":data_Dict[key][3],"a10":data_Dict[key][10],"a11":data_Dict[key][11]})
+    # print("AnchorDict:",tableData)
 
-    anchor_list = []
-    count_dict = {1: [], 2: [], 3: [], 10: [], 11: [], 20: [], 21: [], 41: []}
-    for akey in data_Dict.keys():
-        anchor_list.append(akey)
-    for key in count_dict.keys():
-        for akey in data_Dict.keys():
-            count_dict[key].append(data_Dict[akey][key])
-    data_dict = {'anchors': anchor_list, 'data': count_dict}
-    print("Item count", anchor_list)
-    return {"code": 200, "message": "success", 'data': {'total': count, 'items': data_dict}}
+    
+    # count_data = []
+    # type_colletion = []
+    # anchor_now_name = ''
 
+    # if items[0].anchor_name:
+    #     anchor_now_name = items[0].anchor_name
+    # for item in items:
+    #     if item.anchor_name:
+    #         if item.anchor_name == anchor_now_name:
+    #             type_colletion.append(item.type)
+    #         else:
+    #             if anchor_now_name:
+    #                 count_data.append(
+    #                     {'name': anchor_now_name, 'data': dict(Counter(type_colletion))})
+    #             anchor_now_name = item.anchor_name
+    #             type_colletion = [item.type]
+    # if anchor_now_name:
+    #     count_data.append({'name': anchor_now_name, 'data': dict(Counter(type_colletion))})
 
+    # anchor_list = []
+    # count_dict = {1: [], 2: [], 3: [], 10: [], 11: [], 20: [], 21: [], 41: []}
+    # # print(data_Dict)
+    # for akey in data_Dict.keys():
+    #     anchor_list.append(akey)
+    # for key in count_dict.keys():
+    #     for akey in data_Dict.keys():
+    #         count_dict[key].append(data_Dict[akey][key])
+    # data_dict = {'anchors': anchor_list, 'data': count_dict}
+    # print("Item count", anchor_list)
+    return {"code": 200, "message": "success", 'data': {'total': count, 'dict': AnchorDict,'table':tableData}}
+   
 @timer
 def fireStatistics(request: schemas.AbnormSearchTable, db: Session):
     sqltext = ''
@@ -272,12 +287,16 @@ def fireStatistics(request: schemas.AbnormSearchTable, db: Session):
             continue
         if v and v != 0:
             search_dict[k] = v
-        print(k, v)
+        # print(k, v)
     metro_name = 'abnorm_'+search_dict.pop('metro_name')
-    print('=========================\n', search_dict)
+    # print('=========================\n', search_dict)
     timeArray0 = time.strptime(search_dict['timestamp'][0], "%Y-%m-%d")
     timeArray1 = time.strptime(search_dict['timestamp'][1], "%Y-%m-%d")
+    search_dict['timestamp_start'] = int(time.mktime(timeArray0))*1000
+    search_dict['timestamp_end'] = int(time.mktime(timeArray1))*1000
     search_dict.pop('timestamp')
+
+    # print('=========================\n', search_dict)
     for k, v in search_dict.items():
         if k == 'timestamp_start':
             if v:
@@ -285,6 +304,14 @@ def fireStatistics(request: schemas.AbnormSearchTable, db: Session):
         elif k == 'timestamp_end':
             if v:
                 sqltext = sqltext+metro_name+'.timestamp'+'<'+str(v)+' and '
+        elif k == 'id_station_pre':
+            if v:
+                sqltext = sqltext+metro_name + \
+                    '.id_station_next'+'>'+str(v)+' and '
+        elif k == 'id_station_next':
+            if v:
+                sqltext = sqltext+metro_name + \
+                    '.id_station_next'+'<='+str(v)+' and '
         # if k=='timestamp':
         #     if v:
         #         sqltext=sqltext+metro_name+'.timestamp'+'>'+str(v)+' and '+metro_name+'.timestamp'+'<'+str(v+86400000)+' and '
@@ -294,16 +321,7 @@ def fireStatistics(request: schemas.AbnormSearchTable, db: Session):
             else:
                 sqltext = sqltext+metro_name+'.'+k+'='+str(v[0])+' and '
         elif k == 'type':
-            print(v)
-            if len(v) == 1:
-                sqltext = sqltext+metro_name+'.'+k+'='+str(v[0])+' and '
-            elif len(v) > 1 and len(v) < 5:
-                for j in v:
-                    sqltext = sqltext+metro_name+'.'+k+'='+str(j)+' or '
-                sqltext = sqltext.rstrip(' or ')
-                sqltext += ' and '
-            else:
-                pass
+            pass
 
         elif k == 'level':
             print(v)
@@ -318,13 +336,15 @@ def fireStatistics(request: schemas.AbnormSearchTable, db: Session):
         elif v and v != 0:
             sqltext = sqltext+metro_name+'.'+k+'='+str(v)+' and '
     sqltext = sqltext.rstrip(' and ')
-    print("sqltext:", sqltext)
+    # print("sqltext:", sqltext)
 
     new_abnorm = type("new_abnorm", (models.baseAbnorm, models.Base), {
                       "__tablename__": metro_name})
+    
     items = db.query(new_abnorm.timestamp, new_abnorm.id, new_abnorm.value).filter(
         new_abnorm.type == 10).filter(text(sqltext)).order_by(new_abnorm.timestamp).all()
     print("items---len:", len(items))
+
     arcing_min = 5
     arcing_max = 1300
     new_list = []
@@ -362,7 +382,7 @@ def fireStatistics(request: schemas.AbnormSearchTable, db: Session):
         count = len(items)
         return {"code": 200, "msg": "success", 'data': {'total': 0, 'items': data_dict}}
     else:
-        return {"code": 404, "msg": "Empty", 'data': {'total': 0, 'items': []}}
+        return {"code": 404, "message": "404 Not found", 'data': {'total': 0, 'items': []}}
 
 
 def searchXG(request: schemas.AbnormSearchTable, db: Session):

@@ -346,16 +346,16 @@ def searchChart(request: schemas.MeasSearchTable, db: Session):
     sqltext = sqltext.rstrip(' and ')
     print("\nsqltext-2", sqltext)
 
-    Querys = db.query(new_meas).filter(text(sqltext)).all()
+    # Querys = db.query(new_meas).filter(text(sqltext)).all()
+    
     itemsDict = {}
     for k in station_sort:
         itemsDict[k] = []
     Querys = db.query(new_meas).filter(text(sqltext)).all()
+    print('Querys',len(Querys))
     for item in Querys:
         itemsDict[item.id_station_next].append(item)
-    itemsList = []
     chartDatas = {'stagger':[],'height':[],'abrasion':[],'temp':[],'abrasion_other':[],'stagger_other':[],'anchorStagger':[],'anchorHeight':[],'anchorName':[]}
-    anchorsCharts = []
     for station in station_sort:
         try:
             items = itemsDict[station]
@@ -376,7 +376,5 @@ def searchChart(request: schemas.MeasSearchTable, db: Session):
                     chartDatas[key].append(item)
         except Exception as e:
             print('Error', str(e))
-    count = len(itemsList)
-    print('count', count)
     # anchor表的数据
-    return {"code": 200, "message": "success", 'data': {'chartDatas': chartDatas, 'items': itemsList, 'tour_list': list_distance_span_station, 'trueData': anchorsCharts}}
+    return {"code": 200, "message": "success", 'data': {'chartDatas': chartDatas}}
