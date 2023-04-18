@@ -213,7 +213,7 @@ def searchByAnchor(request: schemas.AbnormSearchTable, db: Session):
     items = db.query(new_meas).filter(text(sqltext)).having(
         text(sqltext2)).order_by(new_meas.distance_from_last_station_m).all()
     if not items:
-        return {"code": 404, "message": "404 Not found", 'data': {'total': 0, 'items': []}}
+        return {"code": 404, "message": "404 Not found", 'data': {'total': 0, 'dict': []}}
 
     count = len(items)
     data_Dict = {}
@@ -242,39 +242,7 @@ def searchByAnchor(request: schemas.AbnormSearchTable, db: Session):
         AnchorDict['abnorm'][10].append(data_Dict[key][10])
         AnchorDict['abnorm'][11].append(data_Dict[key][11])
         tableData.append({'anchor杆号':key, '导高异常':data_Dict[key][1],"拉出值异常":data_Dict[key][2],"磨耗异常":data_Dict[key][3],"燃弧异常":data_Dict[key][10],"温度异常":data_Dict[key][11]})
-        # tableData.append({"anchor":key, 'a1':data_Dict[key][1],"a2":data_Dict[key][2],"a3":data_Dict[key][3],"a10":data_Dict[key][10],"a11":data_Dict[key][11]})
-    # print("AnchorDict:",tableData)
 
-    
-    # count_data = []
-    # type_colletion = []
-    # anchor_now_name = ''
-
-    # if items[0].anchor_name:
-    #     anchor_now_name = items[0].anchor_name
-    # for item in items:
-    #     if item.anchor_name:
-    #         if item.anchor_name == anchor_now_name:
-    #             type_colletion.append(item.type)
-    #         else:
-    #             if anchor_now_name:
-    #                 count_data.append(
-    #                     {'name': anchor_now_name, 'data': dict(Counter(type_colletion))})
-    #             anchor_now_name = item.anchor_name
-    #             type_colletion = [item.type]
-    # if anchor_now_name:
-    #     count_data.append({'name': anchor_now_name, 'data': dict(Counter(type_colletion))})
-
-    # anchor_list = []
-    # count_dict = {1: [], 2: [], 3: [], 10: [], 11: [], 20: [], 21: [], 41: []}
-    # # print(data_Dict)
-    # for akey in data_Dict.keys():
-    #     anchor_list.append(akey)
-    # for key in count_dict.keys():
-    #     for akey in data_Dict.keys():
-    #         count_dict[key].append(data_Dict[akey][key])
-    # data_dict = {'anchors': anchor_list, 'data': count_dict}
-    # print("Item count", anchor_list)
     return {"code": 200, "message": "success", 'data': {'total': count, 'dict': AnchorDict,'table':tableData}}
    
 @timer

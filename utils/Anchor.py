@@ -42,7 +42,7 @@ class Anchor(object):
             for key2 in self.StationList[key].keys():
                 self.StationList[key][key2] = np.array(
                     self.StationList[key][key2])
-        #     print(key,self.StationList[key]['dist'][-1])
+            # print(key,self.StationList[key]['dist'][-1])
         # print('==')
     def getStationInfo(self, station: int):
         if station in self.StationList.keys():
