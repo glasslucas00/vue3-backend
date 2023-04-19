@@ -75,8 +75,8 @@ class AbnormSearchTable(BaseModel):
     pageSize: int = None
     metro_name: str
     timestamp: List = None
-    id_station_next: int = None
-    id_station_pre: int = None
+    id_station_next: Union[str, int] = None
+    id_station_pre: Union[str, int] = None
     direction: List = None
     type: Union[str, List] = None  # 告警类型
     level: Union[str, List] = None  # 等级

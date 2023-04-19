@@ -39,6 +39,12 @@ def search(request: schemas.AbnormSearchTable, db: Session):
     page_index = search_dict.pop('pageIndex')
     page_size = search_dict.pop('pageSize')
     metro_name = 'abnorm_'+search_dict.pop('metro_name')
+    if '33' in metro_name:
+        file_head = '04033/'
+    elif '32' in metro_name:
+        file_head = '04032/'
+    else:
+        file_head = '010002/'
     sqltext2 = ''
     print('=========================\n', search_dict)
 
@@ -120,6 +126,10 @@ def search(request: schemas.AbnormSearchTable, db: Session):
     arcing_min = 5
     arcing_max = 1300
     for item in items:
+        if item.file_img:
+            item.file_img=config("FILE_SERVER")+file_head+item.file_img
+        if item.file_video:
+            item.file_video=(config("FILE_SERVER")+file_head+item.file_video).replace('h264','mp4')
         if item.direction == 1:
             item.anchor_name, item.anchor_distance_m = ulanchor.getAnchorName(
                 item.id_station_next, item.distance_from_last_station_m)
@@ -131,7 +141,7 @@ def search(request: schemas.AbnormSearchTable, db: Session):
                 item.value = arcing_min
             elif item.value > arcing_max:
                 item.value = arcing_max+item.value % 100
-    return {"code": 200, "message": "success", 'data': {'total': total, 'items': items}}
+    return {"code": 200, "message": "查询成功", 'data': {'total': total, 'items': items}}
 
 
 @timer
@@ -213,7 +223,7 @@ def searchByAnchor(request: schemas.AbnormSearchTable, db: Session):
     items = db.query(new_meas).filter(text(sqltext)).having(
         text(sqltext2)).order_by(new_meas.distance_from_last_station_m).all()
     if not items:
-        return {"code": 404, "message": "404 Not found", 'data': {'total': 0, 'dict': []}}
+        return {"code": 404, "message": "查询失败", 'data': {'total': 0, 'dict': []}}
 
     count = len(items)
     data_Dict = {}
@@ -247,7 +257,7 @@ def searchByAnchor(request: schemas.AbnormSearchTable, db: Session):
         AnchorDict['abnorm'][11].append(data_Dict[key][11])
         tableData.append({'anchor杆号':key, '导高异常':data_Dict[key][1],"拉出值异常":data_Dict[key][2],"磨耗异常":data_Dict[key][3],"燃弧异常":data_Dict[key][10],"温度异常":data_Dict[key][11]})
 
-    return {"code": 200, "message": "success", 'data': {'total': count, 'dict': AnchorDict,'table':tableData}}
+    return {"code": 200, "message": "查询成功", 'data': {'total': count, 'dict': AnchorDict,'table':tableData}}
    
 @timer
 def fireStatistics(request: schemas.AbnormSearchTable, db: Session):
@@ -352,9 +362,9 @@ def fireStatistics(request: schemas.AbnormSearchTable, db: Session):
             data_dict.append(
                 {'timestamp': i[0], 'value': i[1], 'runtime_day': i[2], 'count': i[3]})
         count = len(items)
-        return {"code": 200, "msg": "success", 'data': {'total': 0, 'items': data_dict}}
+        return {"code": 200, "message": "查询成功", 'data': {'total': 0, 'items': data_dict}}
     else:
-        return {"code": 404, "message": "404 Not found", 'data': {'total': 0, 'items': []}}
+        return {"code": 404, "message": "查询失败", 'data': {'total': 0, 'items': []}}
 
 
 def searchXG(request: schemas.AbnormSearchTable, db: Session):
@@ -460,7 +470,7 @@ def searchXG(request: schemas.AbnormSearchTable, db: Session):
         new_items.append(item)
 
     print(len(new_items))
-    return {"code": 200, "message": "success", 'data': {'total': total, 'items': new_items}}
+    return {"code": 200, "message": "查询成功", 'data': {'total': total, 'items': new_items}}
 
 
 def delXG(request: str):
@@ -471,7 +481,7 @@ def delXG(request: str):
 
     FILE_PATH = config("FILE_PATH")
     os.remove(FILE_PATH+relatepath)
-    return {"code": 200, "message": "success delete", 'data': {}}
+    return {"code": 200, "message": "已删除", 'data': {}}
 
 
 def cover_time(items):
