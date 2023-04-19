@@ -217,7 +217,11 @@ def searchByAnchor(request: schemas.AbnormSearchTable, db: Session):
 
     count = len(items)
     data_Dict = {}
-    station_sort=list(range(search_dict['id_station_pre'],search_dict['id_station_next']))
+    # print(search_dict.keys() )
+    if 'id_station_pre' in search_dict.keys() and 'id_station_next' in search_dict.keys():
+        station_sort=list(range(search_dict['id_station_pre'],search_dict['id_station_next']))
+    else:
+        station_sort=list(range(1,33))
     for i in station_sort:
         for item in items:
             if item.id_station_next==i:

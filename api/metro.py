@@ -38,7 +38,7 @@ def search(request: schemas.MeasSearchTable, db: Session):
     for k, v in request:
         if v and v != 0:
             search_dict[k] = v
-        print(k, v)
+        # print(k, v)
 
 # 从字典提取数据
     import time
@@ -115,7 +115,7 @@ def search(request: schemas.MeasSearchTable, db: Session):
     if tour_selects:
         tour_selects_index = tour_selects.index(tour_selects[-2])
         search_dict['id_tour'] = str(items_pre[tour_selects_index][1])
-        print('search_dict:', search_dict)
+        # print('search_dict:', search_dict)
     if not tour_selects:  # 没有趟次数据，返回空
         print('Error /*日期错误')
         return {"code": status.HTTP_404_NOT_FOUND, "msg": 'Date Error', 'data': {'total': [], 'items': [], 'trueData': []}}
@@ -146,7 +146,7 @@ def search(request: schemas.MeasSearchTable, db: Session):
                     '.id_station_next'+flag_b+str(v)+' and '
 
         elif k == 'meastypes':
-            print(v)
+            # print(v)
             for type2 in v:
                 range_list = search_dict[type2]
                 sqltext = sqltext+metro_name + \
@@ -163,15 +163,12 @@ def search(request: schemas.MeasSearchTable, db: Session):
         elif v and v != 0:
             sqltext = sqltext+metro_name+'.'+k+'='+str(v)+' and '
     sqltext = sqltext.rstrip(' and ')
-    print("\nsqltext-2", sqltext)
-
     itemsDict = {}
     for k in station_sort:
         itemsDict[k] = []
     Querys = db.query(new_meas).filter(text(sqltext)).all()
     for item in Querys:
         itemsDict[item.id_station_next].append(item)
-
     print('数据库总数量:', len(Querys))
     itemsList = []
     for station in station_sort:
