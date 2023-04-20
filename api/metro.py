@@ -38,7 +38,7 @@ def search(request: schemas.MeasSearchTable, db: Session):
     for k, v in request:
         if v and v != 0:
             search_dict[k] = v
-        print(k, v)
+        # print(k, v)
 
 # 从字典提取数据
     import time
@@ -113,12 +113,15 @@ def search(request: schemas.MeasSearchTable, db: Session):
     for item in items_pre:
         tour_selects.append(item[0])
     if tour_selects:
-        tour_selects_index = tour_selects.index(tour_selects[-2])
+        if len(tour_selects)>=2:
+            tour_selects_index = tour_selects.index(tour_selects[-2])
+        else:
+            tour_selects_index = tour_selects.index(tour_selects[-1])
         search_dict['id_tour'] = str(items_pre[tour_selects_index][1])
-        print('search_dict:', search_dict)
+        # print('search_dict:', search_dict)
     if not tour_selects:  # 没有趟次数据，返回空
         print('Error /*日期错误')
-        return {"code": status.HTTP_404_NOT_FOUND, "msg": 'Date Error', 'data': {'total': [], 'items': [], 'trueData': []}}
+        return {"code": status.HTTP_404_NOT_FOUND, "message": '查询失败', 'data': {'total': [], 'items': [], 'trueData': []}}
 
     if direction == -1:
         station_sort = list(range(search_dict['id_station_pre'], search_dict['id_station_next']))[
@@ -146,7 +149,7 @@ def search(request: schemas.MeasSearchTable, db: Session):
                     '.id_station_next'+flag_b+str(v)+' and '
 
         elif k == 'meastypes':
-            print(v)
+            # print(v)
             for type2 in v:
                 range_list = search_dict[type2]
                 sqltext = sqltext+metro_name + \
@@ -163,15 +166,12 @@ def search(request: schemas.MeasSearchTable, db: Session):
         elif v and v != 0:
             sqltext = sqltext+metro_name+'.'+k+'='+str(v)+' and '
     sqltext = sqltext.rstrip(' and ')
-    print("\nsqltext-2", sqltext)
-
     itemsDict = {}
     for k in station_sort:
         itemsDict[k] = []
     Querys = db.query(new_meas).filter(text(sqltext)).all()
     for item in Querys:
         itemsDict[item.id_station_next].append(item)
-
     print('数据库总数量:', len(Querys))
     itemsList = []
     for station in station_sort:
@@ -197,7 +197,7 @@ def search(request: schemas.MeasSearchTable, db: Session):
             print('Error', str(e))
     count = len(itemsList)
     print('count', count)
-    return {"code": 200, "message": "success", 'data': {'total': count, 'items': itemsList,  'trueData': []}}
+    return {"code": 200, "message": "查询成功", 'data': {'total': count, 'items': itemsList,  'trueData': []}}
 
 
 @timer
@@ -300,7 +300,7 @@ def searchChart(request: schemas.MeasSearchTable, db: Session):
         # print('\n')
         print('search_dict:', search_dict)
     if not tour_selects:  # 没有趟次数据，返回空
-        return {"code": 400, "msg": "tour_selects fail", 'data': {'total': [], 'items': [], 'tour_list': [], 'trueData': []}}
+        return {"code": 404, "message": "查询失败", 'data': {'total': [], 'items': [], 'tour_list': [], 'trueData': []}}
     if direction == -1:
         station_sort = list(range(search_dict['id_station_pre'], search_dict['id_station_next']))[
             ::-1]  # 站点数组 [2,3,4...]
@@ -346,16 +346,16 @@ def searchChart(request: schemas.MeasSearchTable, db: Session):
     sqltext = sqltext.rstrip(' and ')
     print("\nsqltext-2", sqltext)
 
-    Querys = db.query(new_meas).filter(text(sqltext)).all()
+    # Querys = db.query(new_meas).filter(text(sqltext)).all()
+    
     itemsDict = {}
     for k in station_sort:
         itemsDict[k] = []
     Querys = db.query(new_meas).filter(text(sqltext)).all()
+    print('Querys',len(Querys))
     for item in Querys:
         itemsDict[item.id_station_next].append(item)
-    itemsList = []
     chartDatas = {'stagger':[],'height':[],'abrasion':[],'temp':[],'abrasion_other':[],'stagger_other':[],'anchorStagger':[],'anchorHeight':[],'anchorName':[]}
-    anchorsCharts = []
     for station in station_sort:
         try:
             items = itemsDict[station]
@@ -371,30 +371,10 @@ def searchChart(request: schemas.MeasSearchTable, db: Session):
             ymatch.groupsMatch()
             ymatch.maxDist=maxDist
             items = ymatch.groupFit()
-            # TrueAnchorsChart = upanchor.getAnchorsItems(station)
-            # print('len(items)',len(items))
-            # for item in items:
-            #     item.distance_from_last_station_m += maxDist
-            #     itemsList.append(item)
             for key in ymatch.chartDatas:
                 for item in ymatch.chartDatas[key]:
                     chartDatas[key].append(item)
-            # for item in ymatch.staggerData:
-            #     chartDatas['staggerData'].append(item)
-            # for item in  ymatch.heightData:
-            #     chartDatas['heightData'].append(item)
-            # for item in ymatch.anchorStagger:
-            #     chartDatas['anchorStagger'].append(item)
-            # for item in  ymatch.anchorHeight:
-            #     chartDatas['anchorHeight'].append(item)
-            # for item in  ymatch.anchorName:
-            #     chartDatas['anchorName'].append(item)
-            # for item in TrueAnchorsChart:
-            #     item['distance_from_last_station_m'] += maxDist
-            #     anchorsCharts.append(item)
         except Exception as e:
             print('Error', str(e))
-    count = len(itemsList)
-    print('count', count)
     # anchor表的数据
-    return {"code": 200, "message": "success", 'data': {'chartDatas': chartDatas, 'items': itemsList, 'tour_list': list_distance_span_station, 'trueData': anchorsCharts}}
+    return {"code": 200, "message": "查询成功", 'data': {'chartDatas': chartDatas}}

@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.signal import find_peaks
-from utils.Anchor import Anchor
-import matplotlib.pyplot as plt
+# from utils.Anchor import Anchor
+# import matplotlib.pyplot as plt
 
 
 class AnchorXMatch(object):
@@ -36,9 +36,11 @@ class AnchorXMatch(object):
         s1 = get_peaks(self.dist, self.stagger, 40)
         s2 = get_peaks(self.adist, self.astagger, 20)
         ns2, ns1 = get_matches(s1, s2)
-        ns1.append(self.dist[-1])
-        ns2.append(self.dist[-1])
-        # print(ns1,ns2)
+        for i in self.dist[::-1]:
+            if i:
+                ns1.append(i)
+                ns2.append(i)
+                break
         i = 1
         for d in self.dist:
             if d > ns2[i]:

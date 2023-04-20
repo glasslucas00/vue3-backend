@@ -2,3 +2,7 @@ api/__pycache__/abnorm.cpython-37.pyc
 *.pyc
 out
 static_pkg
+<<<<<<< HEAD
+=======
+*zip
+>>>>>>> hz4

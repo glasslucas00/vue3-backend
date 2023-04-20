@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 
 class Anchor(object):
@@ -31,19 +31,19 @@ class Anchor(object):
         csvData = pd.read_csv(csvfile)
         csvData = csvData[:].values
         for row in csvData:
-            if row[1] not in self.StationList.keys():
-                self.StationList[row[1]] = {
+            if row[2] not in self.StationList.keys():
+                self.StationList[row[2]] = {
                     'name': [], 'dist': [], 'stagger': [], 'height': []}
-            self.StationList[row[1]]['name'].append(row[0])
-            self.StationList[row[1]]['dist'].append(row[3])
-            self.StationList[row[1]]['stagger'].append(-row[5])
-            self.StationList[row[1]]['height'].append(row[4])
+            self.StationList[row[2]]['name'].append(row[3])
+            self.StationList[row[2]]['dist'].append(row[8])
+            self.StationList[row[2]]['stagger'].append(row[5])
+            self.StationList[row[2]]['height'].append(row[4])
         for key in self.StationList.keys():
             for key2 in self.StationList[key].keys():
                 self.StationList[key][key2] = np.array(
                     self.StationList[key][key2])
-            # print(self.StationList[key]['dist'][-1])
-
+            # print(key,self.StationList[key]['dist'][-1])
+        # print('==')
     def getStationInfo(self, station: int):
         if station in self.StationList.keys():
             return self.StationList[station]

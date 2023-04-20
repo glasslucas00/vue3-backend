@@ -60,7 +60,7 @@ class AnchorYMatch(object):
         peak_indexs = []
         new_indices = []
         for i in range(stagger.shape[0]-1):
-            if abs(stagger[i]-stagger[i+1]) > 160:
+            if abs(stagger[i]-stagger[i+1]) > 150:
                 new_indices.append(i+1)
                 if stagger[i] > 0:
                     peak_indexs.append(i)
@@ -168,12 +168,6 @@ class AnchorYMatch(object):
                     if key =="anchorName" or key =='stagger_other':
                         continue
                     self.chartDatas[key].append([adist+0.1, None])
-                # self.chartDatas['stagger'].append([adist+0.1, None])
-                # self.chartDatas['height'].append([adist+0.1, None])
-                # self.chartDatas['stagger'].append([adist+0.1, None])
-                # self.chartDatas['height'].append([adist+0.1, None])
-                # self.chartDatas['anchorStagger'].append([adist+0.1, None])
-                # self.chartDatas['anchorHeight'].append([adist+0.1, None])
         self.chartDatas['anchorName'].append([adist+4, '站点-'+str(self.station)])
             # fit_stagger_groups.append(fit_stagger_group)
         # print(len(self.fit_items))
@@ -198,9 +192,9 @@ class AnchorYMatch(object):
             stagger_other.append(item.stagger_other)
             dist.append(item.distance_from_last_station_m)
 
-        plt.plot(dist, stagger)
-        plt.plot(dist, stagger_other)
-        plt.show()
+        # plt.plot(dist, stagger)
+        # plt.plot(dist, stagger_other)
+        # plt.show()
 
     def addPointsByFit(self, items):
         # plt.figure()
