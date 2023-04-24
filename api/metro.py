@@ -295,7 +295,10 @@ def searchChart(request: schemas.MeasSearchTable, db: Session):
     for item in items_pre:
         tour_selects.append(item[0])
     if tour_selects:
-        tour_selects_index = tour_selects.index(tour_selects[-2])
+        if len(tour_selects)>=2:
+            tour_selects_index = tour_selects.index(tour_selects[-2])
+        else:
+            tour_selects_index = tour_selects.index(tour_selects[-1])
         search_dict['id_tour'] = str(items_pre[tour_selects_index][1])
         # print('\n')
         print('search_dict:', search_dict)
