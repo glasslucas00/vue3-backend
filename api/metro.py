@@ -302,11 +302,9 @@ def searchChart(request: schemas.MeasSearchTable, db: Session):
     if not tour_selects:  # 没有趟次数据，返回空
         return {"code": 404, "message": "查询失败", 'data': {'total': [], 'items': [], 'tour_list': [], 'trueData': []}}
     if direction == -1:
-        station_sort = list(range(search_dict['id_station_pre'], search_dict['id_station_next']))[
-            ::-1]  # 站点数组 [2,3,4...]
+        station_sort = list(range(search_dict['id_station_pre'], search_dict['id_station_next']))[::-1]  # 站点数组 [2,3,4...]
     else:
-        station_sort = list(
-            range(search_dict['id_station_pre']+1, search_dict['id_station_next']+1))
+        station_sort = list(range(search_dict['id_station_pre']+1, search_dict['id_station_next']+1))
 
     # ************************** 第二次搜索 **************************
     # search_dict.pop('meastypes')

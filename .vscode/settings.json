@@ -10,6 +10,9 @@
     "sqltools.useNodeRuntime": true,
     "liveServer.settings.port": 5501,
     "html.format.wrapLineLength": 0,
-    "python.formatting.yapfArgs": ["--style={ based_on_style: pep8, column_limit: 400 }"],
+    "python.formatting.yapfArgs": [
+        "--style={ based_on_style: pep8, column_limit: 400 }"
+    ],
+    "vue.features.codeActions.enable": false,
 
 }
