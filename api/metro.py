@@ -149,8 +149,11 @@ def search(request: schemas.MeasSearchTable, db: Session):
                     '.id_station_next'+flag_b+str(v)+' and '
 
         elif k == 'meastypes':
-            # print(v)
             for type2 in v:
+                if type2 =='abrasion':
+                    range_list = search_dict[type2]
+                    sqltext = sqltext+metro_name + '.'+type2+'>' + str((range_list[0]- 0.8)*2.5)+' and '+metro_name + '.'+type2+'<'+str((range_list[1]- 0.8)*2.5) + ' and '
+                    continue
                 range_list = search_dict[type2]
                 sqltext = sqltext+metro_name + \
                     '.'+type2+'>' + \
@@ -166,6 +169,7 @@ def search(request: schemas.MeasSearchTable, db: Session):
         elif v and v != 0:
             sqltext = sqltext+metro_name+'.'+k+'='+str(v)+' and '
     sqltext = sqltext.rstrip(' and ')
+    # print(sqltext)
     itemsDict = {}
     for k in station_sort:
         itemsDict[k] = []
@@ -214,7 +218,7 @@ def searchChart(request: schemas.MeasSearchTable, db: Session):
     for k, v in request:
         if v and v != 0:
             search_dict[k] = v
-        print(k, v)
+        # print(k, v)
 
 # 从字典提取数据
     import time

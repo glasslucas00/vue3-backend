@@ -164,6 +164,10 @@ def searchByAnchor(request: schemas.AbnormSearchTable, db: Session):
     # 转为时间戳
     search_dict['timestamp_start'] = int(time.mktime(timeArray0))*1000
     search_dict['timestamp_end'] = int(time.mktime(timeArray1))*1000
+    if 'id_station_pre' in search_dict.keys() and 'id_station_next' in search_dict.keys():
+        station_sort=list(range(int(search_dict['id_station_pre']),int(search_dict['id_station_next'])))
+    else:
+        station_sort=list(range(1,33))
     search_dict.pop('timestamp')
 
     print('=========================\n', search_dict)
@@ -228,10 +232,7 @@ def searchByAnchor(request: schemas.AbnormSearchTable, db: Session):
     count = len(items)
     data_Dict = {}
     # print(search_dict.keys() )
-    if 'id_station_pre' in search_dict.keys() and 'id_station_next' in search_dict.keys():
-        station_sort=list(range(search_dict['id_station_pre'],search_dict['id_station_next']))
-    else:
-        station_sort=list(range(1,33))
+
     for i in station_sort:
         for item in items:
             if item.id_station_next==i:
