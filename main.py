@@ -49,5 +49,5 @@ async def index(request: Request):
 
 if __name__ == '__main__':
     # uvicorn.run(app, host="127.0.0.1", port=8800, reload=True, debug=True)
-    # uvicorn.run(app='main:app', host=config("HOST"), port=config("PORT",cast=int), reload=True, debug=True)
-    uvicorn.run(app, host=config("HOST"), port=config("PORT",cast=int))
+    uvicorn.run(app='main:app', host=config("HOST"), port=config("PORT",cast=int), reload=True, debug=True)
+    # uvicorn.run(app, host=config("HOST"), port=config("PORT",cast=int))

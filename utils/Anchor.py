@@ -113,7 +113,7 @@ class Anchor(object):
         else:
             val = val/2.5 + 0.8 + np.random.ranf(1)[0]*0.4
         val = round(val, 3)
-        return 14 - val, val
+        return  val,14 - val
 
     def getAnchorsItems(self, station):
         d_dict = []

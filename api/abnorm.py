@@ -97,12 +97,9 @@ def search(request: schemas.AbnormSearchTable, db: Session):
             else:
                 pass
         elif k == 'level':
-            print(v)
             if len(v) == 1:
                 sqltext = sqltext+metro_name+'.'+k+'='+str(v[0])+' and '
-                # sqltext=sqltext+metro_name+'.'+k+' IN '+str(tuple(v)).replace("'",'')+' and '
             elif len(v) == 2:
-                # sear_dict[k]=v
                 sqltext2 = sqltext2+metro_name+'.'+k+'=' + \
                     str(v[0])+' or '+metro_name+'.'+k+'='+str(v[1])+' and '
             else:
@@ -164,6 +161,10 @@ def searchByAnchor(request: schemas.AbnormSearchTable, db: Session):
     # 转为时间戳
     search_dict['timestamp_start'] = int(time.mktime(timeArray0))*1000
     search_dict['timestamp_end'] = int(time.mktime(timeArray1))*1000
+    if 'id_station_pre' in search_dict.keys() and 'id_station_next' in search_dict.keys():
+        station_sort=list(range(int(search_dict['id_station_pre']),int(search_dict['id_station_next'])))
+    else:
+        station_sort=list(range(1,33))
     search_dict.pop('timestamp')
 
     print('=========================\n', search_dict)
@@ -223,15 +224,12 @@ def searchByAnchor(request: schemas.AbnormSearchTable, db: Session):
     items = db.query(new_meas).filter(text(sqltext)).having(
         text(sqltext2)).order_by(new_meas.distance_from_last_station_m).all()
     if not items:
-        return {"code": 404, "message": "查询失败", 'data': {'total': 0, 'dict': []}}
+        return {"code": 404, "message": "空数据", 'data': {'total': 0, 'dict': []}}
 
     count = len(items)
     data_Dict = {}
     # print(search_dict.keys() )
-    if 'id_station_pre' in search_dict.keys() and 'id_station_next' in search_dict.keys():
-        station_sort=list(range(search_dict['id_station_pre'],search_dict['id_station_next']))
-    else:
-        station_sort=list(range(1,33))
+
     for i in station_sort:
         for item in items:
             if item.id_station_next==i:
@@ -306,19 +304,23 @@ def fireStatistics(request: schemas.AbnormSearchTable, db: Session):
             pass
 
         elif k == 'level':
-            print(v)
+            # sqltext = sqltext+metro_name+'.'+k+" "+'in'+" " +str(v)+' and '
+            # print(metro_name+'.'+k+" "+'in'+" " +str(v)+' and ')
+            # pass
             if len(v) == 1:
                 sqltext = sqltext+metro_name+'.'+k+'='+str(v[0])+' and '
+                # sqltext=sqltext+metro_name+'.'+k+' IN '+str(tuple(v)).replace("'",'')+' and '
             elif len(v) == 2:
+                # sear_dict[k]=v
                 sqltext = sqltext+metro_name+'.'+k+'=' + \
-                    str(v[0])+' or '+metro_name+'.'+k+'='+str(v[1])
+                    str(v[0])+' or '+metro_name+'.'+k+'='+str(v[1])+' and '
             else:
                 pass
 
         elif v and v != 0:
             sqltext = sqltext+metro_name+'.'+k+'='+str(v)+' and '
     sqltext = sqltext.rstrip(' and ')
-    # print("sqltext:", sqltext)
+    print("sqltext:", sqltext)
 
     new_abnorm = type("new_abnorm", (models.baseAbnorm, models.Base), {
                       "__tablename__": metro_name})
@@ -326,7 +328,8 @@ def fireStatistics(request: schemas.AbnormSearchTable, db: Session):
     items = db.query(new_abnorm.timestamp, new_abnorm.id, new_abnorm.value).filter(
         new_abnorm.type == 10).filter(text(sqltext)).order_by(new_abnorm.timestamp).all()
     print("items---len:", len(items))
-
+    if not items:
+        return {"code": 404, "message": "空数据",'data': {'total': 0, 'items': {}}}
     arcing_min = 5
     arcing_max = 1300
     new_list = []
@@ -339,32 +342,31 @@ def fireStatistics(request: schemas.AbnormSearchTable, db: Session):
             item_x = arcing_max+item[2] % 100
         new_list.append((item[0], item[1], item_x))
     items = new_list
-    if items:
-        max_time = cover_time(items[0])
-        plist = []
-        start_timestamp = items[0][0]
-        end_timestamp = 0
-        i = 0
-        j = 0
-        for item in items:
-            if item[0] > max_time:
-                plist.append((max_time, i, end_timestamp-start_timestamp, j))
-                max_time = cover_time(item)
-                i = item[2]
-                j = 1
-            else:
-                i = i+item[2]
-                j = j+1
-                end_timestamp = item[0]
-        plist.append((max_time, i, end_timestamp-start_timestamp, j))
-        data_dict = []
-        for i in plist:
-            data_dict.append(
-                {'timestamp': i[0], 'value': i[1], 'runtime_day': i[2], 'count': i[3]})
-        count = len(items)
-        return {"code": 200, "message": "查询成功", 'data': {'total': 0, 'items': data_dict}}
-    else:
-        return {"code": 404, "message": "查询失败", 'data': {'total': 0, 'items': []}}
+
+    max_time = cover_time(items[0])
+    plist = []
+    start_timestamp = items[0][0]
+    end_timestamp = 0
+    i = 0
+    j = 0
+    for item in items:
+        if item[0] > max_time:
+            plist.append((max_time, i, end_timestamp-start_timestamp, j))
+            max_time = cover_time(item)
+            i = item[2]
+            j = 1
+        else:
+            i = i+item[2]
+            j = j+1
+            end_timestamp = item[0]
+    plist.append((max_time, i, end_timestamp-start_timestamp, j))
+    data_dict = []
+    for i in plist:
+        data_dict.append(
+            {'timestamp': i[0], 'value': i[1], 'runtime_day': i[2], 'count': i[3]})
+    count = len(items)
+    return {"code": 200, "message": "查询成功", 'data': {'total': 0, 'items': data_dict}}
+
 
 
 def searchXG(request: schemas.AbnormSearchTable, db: Session):
@@ -455,7 +457,7 @@ def searchXG(request: schemas.AbnormSearchTable, db: Session):
                 continue
 
         if "id_station_next" in search_dict.keys():
-            if item['id_station_next'] > search_dict['id_station_pre'] and item['id_station_next'] <= search_dict['id_station_next']:
+            if item['id_station_next'] > int(search_dict['id_station_pre']) and item['id_station_next'] <= int(search_dict['id_station_next']):
                 pass
             else:
                 continue
