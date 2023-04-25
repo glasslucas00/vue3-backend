@@ -183,8 +183,9 @@ def search(request: schemas.MeasSearchTable, db: Session):
                     itemsList.append(item)
                 # print(item.stagger_other)
         except Exception as e:
-            print('Error', str(e))
-            return {"code": 401, "message": "查询失败", 'data': {'total': 0, 'items': []}}
+            pass
+            # print('Error', str(e))
+            # return {"code": 401, "message": "查询失败", 'data': {'total': 0, 'items': []}}
     
     flagList=[True]*len(itemsList)  
     NitemsList=[]  
