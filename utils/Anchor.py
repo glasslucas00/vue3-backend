@@ -7,25 +7,7 @@ class Anchor(object):
     def __init__(self, csvfile: str):
         self.StationList = {}
         self.read(csvfile)
-        self.lut_exceptions = {
-            "M018-13":	2.51,
-            "M017-16":	2.08,
-            "M024-14":	3.37,
-            "M024-15":	3.37,
-            "M029-02":	1.86,
-            "M032-05":	2.37,
-            "M035-05": 3.1,
-            "M045-12": 2.16,
-            "M045-14": 2.56,
-            "M050-22": 2.56,
-            "M052-19": 3.38,
-            "M052-20": 3.38,
-            "M066-09": 1.66,
-            "M066-16": 1.58,
-            "M068-03": 1.73,
-            "M085-20": 2.09,
-            "M106-22": 1.96,
-            "M126-16": 2.11}
+        self.lut_exceptions = {}
 
     def read(self, csvfile: str):
         csvData = pd.read_csv(csvfile)
@@ -113,7 +95,7 @@ class Anchor(object):
         else:
             val = val/2.5 + 0.8 + np.random.ranf(1)[0]*0.4
         val = round(val, 3)
-        return  val,14 - val
+        return  val,10 - val
 
     def getAnchorsItems(self, station):
         d_dict = []

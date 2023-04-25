@@ -230,19 +230,16 @@ def searchByAnchor(request: schemas.AbnormSearchTable, db: Session):
     data_Dict = {}
     # print(search_dict.keys() )
 
-    for i in station_sort:
-        for item in items:
-            if item.id_station_next==i:
-                if item.direction == 1:
-                    item.anchor_name, item.anchor_distance_m = ulanchor.getAnchorName(
-                        item.id_station_next, item.distance_from_last_station_m)
-                else:
-                    item.anchor_name, item.anchor_distance_m = dlanchor.getAnchorName(
-                        item.id_station_next, item.distance_from_last_station_m)
-                if item.anchor_name not in data_Dict.keys():
-                    data_Dict[item.anchor_name] = {1: 0, 2: 0, 3: 0, 10: 0, 11: 0, 20: 0, 21: 0, 41: 0}
-                if item.type in [1, 2, 3, 10, 11, 20, 21, 41]:
-                    data_Dict[item.anchor_name][item.type] += 1
+    for item in items:
+        if item.direction == 1:
+            item.anchor_name, item.anchor_distance_m = ulanchor.getAnchorName(item.id_station_next, item.distance_from_last_station_m)
+        else:
+            item.anchor_name, item.anchor_distance_m = dlanchor.getAnchorName(item.id_station_next, item.distance_from_last_station_m)
+        if item.anchor_name not in data_Dict.keys():
+            data_Dict[item.anchor_name] = {1: 0, 2: 0, 3: 0, 10: 0, 11: 0, 20: 0, 21: 0, 41: 0}
+        if item.type in [1, 2, 3, 10, 11, 20, 21, 41]:
+            data_Dict[item.anchor_name][item.type] += 1
+    data_Dict = dict(sorted(data_Dict.items(), key=lambda x: x[0]))
     # print("data_Dict:",data_Dict)
     tableData=[]
     AnchorDict={'anchorname':[],'abnorm':{1:[],2:[],3:[],10:[],11:[],20:[],21:[],41:[]}}
