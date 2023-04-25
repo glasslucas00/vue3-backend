@@ -42,26 +42,29 @@ def search(request: schemas.MeasSearchTable, db: Session):
 
 # 从字典提取数据
     import time
-    timeArray = time.strptime(search_dict['timestamp'], "%Y-%m-%d")
-    # 转为时间戳
-    search_dict['timestamp'] = int(time.mktime(timeArray))*1000
-    metro_name = 'meas_'+search_dict.pop('metro_name')
-    # sort_flag = search_dict.pop('sort')
-    # page = search_dict.pop('page')
-    # limit = search_dict.pop('limit')
-    direction = int(search_dict['direction'])
-    search_dict['id_station_next'] = int(search_dict['id_station_next'])
-    search_dict['id_station_pre'] = int(search_dict['id_station_pre'])
-    if direction > 0:
-        upanchor = ulanchor
-    else:
-        upanchor = dlanchor
-# 如果起始站大于终点站，进行反转
-    if search_dict['id_station_pre'] > search_dict['id_station_next']:
-        temps = search_dict['id_station_pre']
-        search_dict['id_station_pre'] = search_dict['id_station_next']
-        search_dict['id_station_next'] = temps
-
+    try:
+        timeArray = time.strptime(search_dict['timestamp'], "%Y-%m-%d")
+        # 转为时间戳
+        search_dict['timestamp'] = int(time.mktime(timeArray))*1000
+        metro_name = 'meas_'+search_dict.pop('metro_name')
+        # sort_flag = search_dict.pop('sort')
+        # page = search_dict.pop('page')
+        # limit = search_dict.pop('limit')
+        direction = int(search_dict['direction'])
+        search_dict['id_station_next'] = int(search_dict['id_station_next'])
+        search_dict['id_station_pre'] = int(search_dict['id_station_pre'])
+        if direction > 0:
+            upanchor = ulanchor
+        else:
+            upanchor = dlanchor
+    # 如果起始站大于终点站，进行反转
+        if search_dict['id_station_pre'] > search_dict['id_station_next']:
+            temps = search_dict['id_station_pre']
+            search_dict['id_station_pre'] = search_dict['id_station_next']
+            search_dict['id_station_next'] = temps
+    except Exception as e:
+        print('Error', str(e))
+        return {"code": 401, "message": "查询失败", 'data': {'total': 0, 'items': []}}
 # ******************************************1.数据库操作***********************************************************
     # 构造sql语句
     # meastypes=search_dict.pop('meastypes')
@@ -76,12 +79,6 @@ def search(request: schemas.MeasSearchTable, db: Session):
             if v:
                 sqltext = sqltext+metro_name + \
                     '.id_station_next'+flag_a+str(v)+' and '
-        # elif k == 'meastypes':
-        #     print(v)
-        #     for type2 in v:
-        #         range_list =search_dict[type2]
-        #         sqltext = sqltext+metro_name + \
-        #             '.'+type2+'>'+str(range_list[0])+' and '+metro_name + '.'+type2+'<'+str(range_list[1]) +' and '
         elif k == 'stagger' or k == 'height' or k == 'temperature_max' or k == 'abrasion' or k == 'meastypes':
             pass
         elif k == 'id_station_next':
@@ -121,7 +118,7 @@ def search(request: schemas.MeasSearchTable, db: Session):
         # print('search_dict:', search_dict)
     if not tour_selects:  # 没有趟次数据，返回空
         print('Error /*日期错误')
-        return {"code": status.HTTP_404_NOT_FOUND, "message": '查询失败', 'data': {'total': [], 'items': [], 'trueData': []}}
+        return {"code": status.HTTP_404_NOT_FOUND, "message": '查询失败', 'data': {'total': [], 'items': []}}
 
     if direction == -1:
         station_sort = list(range(search_dict['id_station_pre'], search_dict['id_station_next']))[
@@ -147,19 +144,7 @@ def search(request: schemas.MeasSearchTable, db: Session):
             if v:
                 sqltext = sqltext+metro_name + \
                     '.id_station_next'+flag_b+str(v)+' and '
-
-        elif k == 'meastypes':
-            for type2 in v:
-                if type2 =='abrasion':
-                    range_list = search_dict[type2]
-                    sqltext = sqltext+metro_name + '.'+type2+'>' + str((range_list[0]- 0.8)*2.5)+' and '+metro_name + '.'+type2+'<'+str((range_list[1]- 0.8)*2.5) + ' and '
-                    continue
-                range_list = search_dict[type2]
-                sqltext = sqltext+metro_name + \
-                    '.'+type2+'>' + \
-                    str(range_list[0])+' and '+metro_name + \
-                    '.'+type2+'<'+str(range_list[1]) + ' and '
-        elif k == 'stagger' or k == 'height' or k == 'temperature_max' or k == 'abrasion':
+        elif k == 'meastypes' or k == 'stagger' or k == 'height' or k == 'temperature_max' or k == 'abrasion':
             pass
         elif k == 'timestamp':
             if v:
@@ -199,9 +184,26 @@ def search(request: schemas.MeasSearchTable, db: Session):
                 # print(item.stagger_other)
         except Exception as e:
             print('Error', str(e))
-    count = len(itemsList)
+            return {"code": 401, "message": "查询失败", 'data': {'total': 0, 'items': []}}
+    
+    flagList=[True]*len(itemsList)  
+    NitemsList=[]  
+
+
+    if 'meastypes' in search_dict.keys():
+        for meastype in search_dict['meastypes']:
+            range_ = search_dict[meastype]
+            for i in range(len(itemsList)):
+                item=itemsList[i].__dict__
+                if item[meastype]<range_[0] or item[meastype]>range_[1]:
+                    flagList[i]=False
+    for j in range(len(itemsList)):
+        if flagList[j]:
+            NitemsList.append(itemsList[j])
+
+    count = len(NitemsList)
     print('count', count)
-    return {"code": 200, "message": "查询成功", 'data': {'total': count, 'items': itemsList,  'trueData': []}}
+    return {"code": 200, "message": "查询成功", 'data': {'total': count, 'items': NitemsList}}
 
 
 @timer
@@ -262,12 +264,6 @@ def searchChart(request: schemas.MeasSearchTable, db: Session):
             if v:
                 sqltext = sqltext+metro_name + \
                     '.id_station_next'+flag_a+str(v)+' and '
-        # elif k == 'meastypes':
-        #     print(v)
-        #     for type2 in v:
-        #         range_list =search_dict[type2]
-        #         sqltext = sqltext+metro_name + \
-        #             '.'+type2+'>'+str(range_list[0])+' and '+metro_name + '.'+type2+'<'+str(range_list[1]) +' and '
         elif k == 'stagger' or k == 'height' or k == 'temperature_max' or k == 'abrasion' or k == 'meastypes':
             pass
         elif k == 'id_station_next':
@@ -332,13 +328,14 @@ def searchChart(request: schemas.MeasSearchTable, db: Session):
                     '.id_station_next'+flag_b+str(v)+' and '
 
         elif k == 'meastypes':
-            print(v)
-            for type2 in v:
-                range_list = search_dict[type2]
-                sqltext = sqltext+metro_name + \
-                    '.'+type2+'>' + \
-                    str(range_list[0])+' and '+metro_name + \
-                    '.'+type2+'<'+str(range_list[1]) + ' and '
+            pass
+            # print(v)
+            # for type2 in v:
+            #     range_list = search_dict[type2]
+            #     sqltext = sqltext+metro_name + \
+            #         '.'+type2+'>' + \
+            #         str(range_list[0])+' and '+metro_name + \
+            #         '.'+type2+'<'+str(range_list[1]) + ' and '
         elif k == 'stagger' or k == 'height' or k == 'temperature_max' or k == 'abrasion':
             pass
         elif k == 'timestamp':
