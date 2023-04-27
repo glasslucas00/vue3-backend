@@ -75,11 +75,8 @@ delete from abnorm_hz10_002 where id not in (
 ## package exe
 python -m nuitka --standalone --mingw64 --show-memory --show-progress --nofollow-imports --include-package=uvicorn --include-package=click --include-package=h11 --include-package=starlette --include-package=fastapi --include-data-files=.env=.env --include-data-dir=static=static --include-data-dir=templates=templates --include-data-files=hz4_anchor_dl.csv=hz4_anchor_dl.csv --include-data-files=hz4_anchor_ul.csv=hz4_anchor_ul.csv  --windows-icon-from-ico=metro.ico --output-dir=out main.py
 
-<<<<<<< HEAD
-python -m nuitka --standalone  --mingw64 --show-memory --show-progress --nofollow-import-to=sqlalchemy --nofollow-import-to=numpy --nofollow-import-to=pandas --nofollow-import-to=scipy --include-package=uvicorn --include-package=click --include-package=h11 --include-package=starlette --include-package=fastapi --include-data-files=.env=.env --include-data-dir=static=static --include-data-dir=templates=templates --include-data-files=hz4_anchor_dl.csv=hz4_anchor_dl.csv --include-data-files=hz4_anchor_ul.csv=hz4_anchor_ul.csv  --windows-icon-from-ico=metro.ico --output-dir=out main.py
-=======
+
 python -m nuitka --standalone  --mingw64 --show-memory --show-progress --nofollow-import-to=sqlalchemy --nofollow-import-to=numpy --nofollow-import-to=pandas --nofollow-import-to=scipy --include-package=uvicorn --include-package=click --include-package=h11 --include-package=starlette --include-package=fastapi --include-data-files=.env=.env --include-data-dir=static=static --include-data-dir=templates=templates --include-data-files=anchor_dl.csv=anchor_dl.csv --include-data-files=anchor_ul.csv=anchor_ul.csv  --windows-icon-from-ico=metro.ico --output-dir=out main.py
->>>>>>> hz4
 
 ## exe运行
 
