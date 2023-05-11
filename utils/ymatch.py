@@ -153,7 +153,9 @@ class AnchorYMatch(object):
                 t_item.abrasion, t_item.abrasion_other = self.upanchor.refineAbrasion(t_item.anchor_name, t_item.abrasion)
                 fit_stagger_group.append(t_stagger)
                 self.fit_items[anchor_index] = t_item
-
+                # print( t_item.stagger)
+                # if t_item.stagger is None:
+                #     print( anchor_item["name"])
                 self.chartDatas['stagger'].append([adist, t_item.stagger])
                 self.chartDatas['height'].append([adist, t_item.height])
                 self.chartDatas['abrasion'].append([adist, t_item.abrasion])
@@ -200,10 +202,10 @@ class AnchorYMatch(object):
         # plt.figure()
         """Add points by stagger lineas fit"""
         for i in range(1, len(items)-1):
+            # print(items[i].__dict__)
             items[i].stagger_other = None
             stagger_other_front = abs(items[i].stagger-items[i+1].stagger)
             stagger_other_back = abs(items[i-1].stagger-items[i].stagger)
-
             if stagger_other_front > 160 and stagger_other_back > 160:
                 p1 = (items[i-1].distance_from_last_station_m,
                       items[i-1].stagger)
