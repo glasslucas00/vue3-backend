@@ -383,10 +383,10 @@ def searchXG(request: schemas.AbnormSearchTable, db: Session):
     page_size = search_dict.pop('pageSize')
     print(search_dict)
     metro_name = search_dict.pop('metro_name')
-    if '33' in metro_name:
-        file_head = '04033/'
-    elif '32' in metro_name:
-        file_head = '04032/'
+    if '02' in metro_name:
+        file_head = '010002/'
+    elif '01' in metro_name:
+        file_head = '010001/'
     else:
         file_head = '010002/'
 

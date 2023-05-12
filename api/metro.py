@@ -160,6 +160,10 @@ def search(request: schemas.MeasSearchTable, db: Session):
         itemsDict[k] = []
     Querys = db.query(new_meas).filter(text(sqltext)).all()
     for item in Querys:
+        if item.stagger is not None:
+            item.stagger=-item.stagger
+        if item.stagger_other is not None:
+            item.stagger_other=-item.stagger_other
         itemsDict[item.id_station_next].append(item)
     print('数据库总数量:', len(Querys))
     itemsList = []
@@ -357,6 +361,10 @@ def searchChart(request: schemas.MeasSearchTable, db: Session):
     Querys = db.query(new_meas).filter(text(sqltext)).all()
     print('Querys',len(Querys))
     for item in Querys:
+        if item.stagger is not None:
+            item.stagger=-item.stagger
+        if item.stagger_other is not None:
+            item.stagger_other=-item.stagger_other
         itemsDict[item.id_station_next].append(item)
     chartDatas = {'stagger':[],'height':[],'abrasion':[],'temp':[],'abrasion_other':[],'stagger_other':[],'anchorStagger':[],'anchorHeight':[],'anchorName':[]}
     for station in station_sort:

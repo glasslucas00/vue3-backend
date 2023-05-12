@@ -18,7 +18,7 @@ class Anchor(object):
                     'name': [], 'dist': [], 'stagger': [], 'height': []}
             self.StationList[row[1]]['name'].append(row[0])
             self.StationList[row[1]]['dist'].append(row[3])
-            self.StationList[row[1]]['stagger'].append(-row[5])
+            self.StationList[row[1]]['stagger'].append(row[5])
             self.StationList[row[1]]['height'].append(row[4])
         for key in self.StationList.keys():
             for key2 in self.StationList[key].keys():
